@@ -1,13 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import pinoHttp from 'pino-http';
+import helmet from 'helmet';
 import 'dotenv/config.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
-app.use(pinoHttp());
 app.use(cors());
+app.use(helmet());
+app.use(pinoHttp());
 app.use(express.json());
 
 app.get('/notes', (req, res) => {
