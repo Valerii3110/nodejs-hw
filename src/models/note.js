@@ -11,7 +11,9 @@ const noteSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      required: true,
+      required: false, // не обов’язкове
+      default: '', // за замовчуванням порожній рядок
+      trim: true, // обрізає пробіли
       maxlength: 1000,
     },
     tag: {
@@ -24,7 +26,11 @@ const noteSchema = new mongoose.Schema(
         'Work',
         'Finance',
         'Personal',
+        'Ideas',
+        'Important',
+        'Todo',
       ],
+      default: 'Todo', // значення за замовчуванням
     },
   },
   {

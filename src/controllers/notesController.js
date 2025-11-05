@@ -32,7 +32,7 @@ export const createNote = async (req, res, next) => {
   try {
     const { title, content, tag } = req.body;
     const newNote = await Note.create({ title, content, tag });
-    res.status(201).json(newNote); // ❗ було "note" замість "newNote"
+    res.status(201).json(newNote);
   } catch (error) {
     next(error);
   }
@@ -61,8 +61,12 @@ export const updateNoteById = async (req, res, next) => {
 export const deleteNote = async (req, res, next) => {
   try {
     const deletedNote = await Note.findByIdAndDelete(req.params.noteId);
-    if (!deletedNote) throw createHttpError(404, 'Note not found');
-    res.status(204).end();
+
+    if (!deletedNote) {
+      throw createHttpError(404, 'Note not found');
+    }
+
+    res.status(200).json(deletedNote); //  має бути 200 і повернення видаленої нотатки
   } catch (error) {
     next(error);
   }
