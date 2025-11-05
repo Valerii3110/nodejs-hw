@@ -39,7 +39,7 @@ export const createNote = async (req, res, next) => {
 };
 
 //* Оновлення нотатки за ID
-export const updateNoteById = async (req, res, next) => {
+export const updateNote = async (req, res, next) => {
   try {
     const updatedNote = await Note.findByIdAndUpdate(
       req.params.noteId,
