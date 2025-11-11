@@ -5,8 +5,33 @@ import { Note } from '../models/note.js';
 //* Отримання всіх нотаток
 export const getAllNotes = async (req, res, next) => {
   try {
-    const notes = await Note.find();
-    res.status(200).json(notes);
+    const { tag, search, page = 1, perPage = 10 } = req.query;
+
+    const filter = {};
+
+    // 🎯 Фільтрація за тегом
+    if (tag) filter.tag = tag;
+
+    // 🔍 Пошук за текстом
+    if (search) filter.$text = { $search: search };
+
+    const skip = (page - 1) * perPage;
+
+    // 📄 Підрахунок кількості
+    const totalNotes = await Note.countDocuments(filter);
+
+    // ⚙️ Запит з пагінацією
+    const notes = await Note.find(filter).skip(skip).limit(Number(perPage));
+
+    const totalPages = Math.ceil(totalNotes / perPage);
+
+    res.status(200).json({
+      page: Number(page),
+      perPage: Number(perPage),
+      totalNotes,
+      totalPages,
+      notes,
+    });
   } catch (error) {
     next(error);
   }

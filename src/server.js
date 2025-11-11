@@ -18,6 +18,9 @@ import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 //* Імпорт роутів нотаток */
 import notesRoutes from './routes/notesRoutes.js';
+//* Імпорт обробника помилок celebrate */
+import { errors } from 'celebrate';
+
 //* Ініціалізація додатку */
 const app = express();
 //* Визначення порту */
@@ -31,15 +34,23 @@ app.use(express.json());
 app.use(cors());
 //* Додавання заголовків безпеки */
 app.use(helmet());
+
 //* Використання роутів нотаток */
 app.use('/', notesRoutes);
+
+//* Обробка помилок валідації celebrate ⚙️ */
+app.use(errors());
+
 //* Обробка неіснуючих маршрутів */
 app.use(notFoundHandler);
+
 //* Глобальний обробник помилок */
 app.use(errorHandler);
+
 //* Запуск сервера після підключення до бази даних */
 await connectMongoDB();
+
 //* Запуск сервера */
 app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+  console.log(`✅ Server started on port ${PORT}`);
 });

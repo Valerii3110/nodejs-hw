@@ -1,5 +1,6 @@
 //* src/models/note.js */
 import mongoose from 'mongoose';
+import { TAGS } from '../constants/tags.js';
 
 //* Модель нотатки
 const noteSchema = new mongoose.Schema(
@@ -18,18 +19,7 @@ const noteSchema = new mongoose.Schema(
     },
     tag: {
       type: String,
-      enum: [
-        'Shopping',
-        'Meeting',
-        'Travel',
-        'Health',
-        'Work',
-        'Finance',
-        'Personal',
-        'Ideas',
-        'Important',
-        'Todo',
-      ],
+      enum: TAGS,
       default: 'Todo', // значення за замовчуванням
     },
   },
@@ -38,5 +28,7 @@ const noteSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+// 🔍 Індекс для текстового пошуку
+noteSchema.index({ title: 'text', content: 'text' });
 
 export const Note = mongoose.model('Note', noteSchema);
