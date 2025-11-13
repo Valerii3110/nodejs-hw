@@ -6,23 +6,15 @@ import { Note } from '../models/note.js';
 export const getAllNotes = async (req, res, next) => {
   try {
     const { tag, search, page = 1, perPage = 10 } = req.query;
-
-    const filter = {};
-
-    // 🎯 Фільтрація за тегом
-    if (tag) filter.tag = tag;
-
-    // 🔍 Пошук за текстом
-    if (search) filter.$text = { $search: search };
-
     const skip = (page - 1) * perPage;
 
-    // 📄 Підрахунок кількості
-    const totalNotes = await Note.countDocuments(filter);
+    const query = Note.find();
 
-    // ⚙️ Запит з пагінацією
-    const notes = await Note.find(filter).skip(skip).limit(Number(perPage));
+    if (tag) query.where('tag').equals(tag);
+    if (search) query.find({ $text: { $search: search } });
 
+    const totalNotes = await Note.countDocuments(query.getFilter());
+    const notes = await query.skip(skip).limit(Number(perPage)).exec();
     const totalPages = Math.ceil(totalNotes / perPage);
 
     res.status(200).json({

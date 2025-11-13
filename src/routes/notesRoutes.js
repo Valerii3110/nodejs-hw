@@ -23,7 +23,7 @@ router.get('/notes', celebrate(getAllNotesSchema), getAllNotes);
 router.get('/notes/:noteId', celebrate(noteIdSchema), getNoteById);
 router.post('/notes', celebrate(createNoteSchema), createNote);
 router.patch('/notes/:noteId', celebrate(updateNoteSchema), updateNote);
-router.delete('/notes/:noteId', deleteNote);
+router.delete('/notes/:noteId', celebrate(noteIdSchema), deleteNote);
 
 //* Експорт роутера
 export default router;
