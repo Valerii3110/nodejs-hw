@@ -1,9 +1,9 @@
-//* src/models/note.js */
 import mongoose from 'mongoose';
 import { TAGS } from '../constants/tags.js';
 
-//* Модель нотатки
-const noteSchema = new mongoose.Schema(
+const { Schema, model } = mongoose;
+
+const noteSchema = new Schema(
   {
     title: {
       type: String,
@@ -12,15 +12,19 @@ const noteSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      required: false, // не обов’язкове
-      default: '', // за замовчуванням порожній рядок
-      trim: true, // обрізає пробіли
+      default: '',
+      trim: true,
       maxlength: 1000,
     },
     tag: {
       type: String,
       enum: TAGS,
-      default: 'Todo', // значення за замовчуванням
+      default: 'Todo',
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
   },
   {
@@ -28,7 +32,7 @@ const noteSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-// 🔍 Індекс для текстового пошуку
+
 noteSchema.index({ title: 'text', content: 'text' });
 
-export const Note = mongoose.model('Note', noteSchema);
+export const Note = model('Note', noteSchema);
