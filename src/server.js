@@ -1,4 +1,4 @@
-//* server.js
+// src/server.js
 import express from 'express';
 import 'dotenv/config.js';
 import cors from 'cors';
@@ -16,14 +16,14 @@ import notesRoutes from './routes/notesRoutes.js';
 import { errors } from 'celebrate';
 
 const app = express();
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT ?? 3030; // 🔹 Виправлено
 
 app.use(logger);
 app.use(express.json());
 
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true,
   }),
 );
@@ -31,11 +31,9 @@ app.use(
 app.use(helmet());
 app.use(cookieParser());
 
-// ❗ ПІДКЛЮЧАЄМО АУТЕНТИФІКАЦІЮ
-app.use('/auth', authRoutes);
-
-// ❗ ПІДКЛЮЧАЄМО НОТАТКИ
-app.use('/notes', notesRoutes);
+// 🔹 Підключаємо роутери **без префіксів**
+app.use(authRoutes);
+app.use(notesRoutes);
 
 app.use(errors());
 app.use(notFoundHandler);
