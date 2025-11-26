@@ -3,6 +3,11 @@ import bcrypt from 'bcrypt';
 import { User } from '../models/user.js';
 import { Session } from '../models/session.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
+import jwt from 'jsonwebtoken';
+import { sendMail } from '../utils/sendMail.js';
+import handlebars from 'handlebars';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 
 // Реєстрація користувача
 export const registerUser = async (req, res, next) => {
@@ -105,4 +110,91 @@ export const logoutUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// Запит на скидання пароля
+export const requestResetEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    // Навіть якщо користувача не існує — повертаємо 200 (з міркувань безпеки)
+    if (!user) {
+      return res.status(200).json({
+        message: 'Password reset email sent successfully',
+      });
+    }
+
+    // Створюємо JWT токен (дійсний 15 хвилин)
+    const resetToken = jwt.sign(
+      { sub: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' },
+    );
+
+    // Формуємо посилання для фронтенду
+    const resetLink = `${process.env.FRONTEND_DOMAIN}/reset-password?token=${resetToken}`;
+
+    // Шлях до HTML-шаблону
+    const templatePath = path.resolve(
+      'src/templates/reset-password-email.html',
+    );
+    const templateSource = await fs.readFile(templatePath, 'utf8');
+
+    const template = handlebars.compile(templateSource);
+
+    // Підставляємо дані в шаблон
+    const html = template({
+      name: user.email,
+      resetLink,
+    });
+
+    try {
+      // Надсилання листа
+      await sendMail({
+        from: process.env.SMTP_FROM,
+        to: email,
+        subject: 'Reset your password',
+        html,
+      });
+    } catch {
+      return next(
+        createHttpError(
+          500,
+          'Failed to send the email, please try again later.',
+        ),
+      );
+    }
+
+    return res.status(200).json({
+      message: 'Password reset email sent successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Скидання пароля
+export const resetPassword = async (req, res, next) => {
+  const { token, password } = req.body;
+  let paylod;
+  try {
+    paylod = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    next(createHttpError(401, 'Invalid or expired token'));
+    return;
+  }
+  const user = await User.findOne({ _id: paylod.sub, email: paylod.email });
+  if (!user) {
+    next(createHttpError(404, 'User not found'));
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await User.updateOne({ _id: user._id }, { password: hashedPassword });
+
+  await Session.deleteMany({ userId: user._id });
+
+  res.status(200).json({ message: 'Password reset successfully' });
 };

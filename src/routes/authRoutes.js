@@ -5,12 +5,16 @@ import { celebrate } from 'celebrate';
 import {
   registerUserSchema,
   loginUserSchema,
+  requestResetEmailShema,
+  resetPasswordSchema,
 } from '../validations/authValidation.js';
 import {
   registerUser,
   loginUser,
   refreshUserSession,
   logoutUser,
+  requestResetEmail,
+  resetPassword,
 } from '../controllers/authController.js';
 
 const router = Router();
@@ -26,5 +30,19 @@ router.post('/refresh', refreshUserSession);
 
 // Логаут
 router.post('/logout', logoutUser);
+
+// Запит на скидання пароля
+router.post(
+  '/auth/request-reset-email',
+  celebrate(requestResetEmailShema),
+  requestResetEmail,
+);
+
+// Скидання пароля
+router.post(
+  '/auth/reset-password',
+  celebrate(resetPasswordSchema),
+  resetPassword,
+);
 
 export default router;

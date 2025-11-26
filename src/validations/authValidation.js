@@ -1,4 +1,5 @@
 // src/validations/authValidation.js
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
 export const registerUserSchema = Joi.object({
@@ -10,3 +11,16 @@ export const loginUserSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
+
+export const requestResetEmailShema = {
+  [Segments.BODY]: Joi.object({
+    email: Joi.string().email().required(),
+  }),
+};
+
+export const resetPasswordSchema = {
+  [Segments.BODY]: Joi.object({
+    password: Joi.string().min(8).required(),
+    token: Joi.string().required(),
+  }),
+};
