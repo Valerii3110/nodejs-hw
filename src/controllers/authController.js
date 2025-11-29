@@ -21,15 +21,12 @@ export const registerUser = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      email,
-      password: hashedPassword,
-    });
+    const newUser = await User.create({ email, password: hashedPassword });
 
-    const session = await createSession(user._id);
-    setSessionCookies(res, session);
+    const newSession = await createSession(newUser._id);
+    setSessionCookies(res, newSession);
 
-    res.status(201).json(user); // пароль не буде, завдяки user.toJSON()
+    res.status(201).json(newUser);
   } catch (error) {
     next(error);
   }
@@ -50,13 +47,12 @@ export const loginUser = async (req, res, next) => {
       return next(createHttpError(401, 'Invalid credentials'));
     }
 
-    // Видаляємо стару сесію
     await Session.deleteMany({ userId: user._id });
 
-    const session = await createSession(user._id);
-    setSessionCookies(res, session);
+    const newSession = await createSession(user._id); // <-- Виправлено
+    setSessionCookies(res, newSession);
 
-    res.status(200).json(user);
+    res.status(200).json(user); // toJSON прибере пароль
   } catch (error) {
     next(error);
   }
@@ -80,7 +76,6 @@ export const refreshUserSession = async (req, res, next) => {
       return next(createHttpError(401, 'Session token expired'));
     }
 
-    // Видаляємо стару сесію
     await session.deleteOne();
 
     const newSession = await createSession(session.userId);
@@ -101,7 +96,6 @@ export const logoutUser = async (req, res, next) => {
       await Session.deleteOne({ _id: sessionId });
     }
 
-    // Очищаємо кукі
     res.clearCookie('sessionId');
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
@@ -119,39 +113,32 @@ export const requestResetEmail = async (req, res, next) => {
 
     const user = await User.findOne({ email });
 
-    // Навіть якщо користувача не існує — повертаємо 200 (з міркувань безпеки)
     if (!user) {
-      return res.status(200).json({
-        message: 'Password reset email sent successfully',
-      });
+      return res
+        .status(200)
+        .json({ message: 'Password reset email sent successfully' });
     }
 
-    // Створюємо JWT токен (дійсний 15 хвилин)
     const resetToken = jwt.sign(
       { sub: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '15m' },
     );
 
-    // Формуємо посилання для фронтенду
     const resetLink = `${process.env.FRONTEND_DOMAIN}/reset-password?token=${resetToken}`;
 
-    // Шлях до HTML-шаблону
     const templatePath = path.resolve(
       'src/templates/reset-password-email.html',
     );
     const templateSource = await fs.readFile(templatePath, 'utf8');
-
     const template = handlebars.compile(templateSource);
 
-    // Підставляємо дані в шаблон
     const html = template({
       name: user.email,
       resetLink,
     });
 
     try {
-      // Надсилання листа
       await sendMail({
         from: process.env.SMTP_FROM,
         to: email,
@@ -178,14 +165,16 @@ export const requestResetEmail = async (req, res, next) => {
 // Скидання пароля
 export const resetPassword = async (req, res, next) => {
   const { token, password } = req.body;
-  let paylod;
+  let payload;
+
   try {
-    paylod = jwt.verify(token, process.env.JWT_SECRET);
+    payload = jwt.verify(token, process.env.JWT_SECRET); // <-- виправлено paylod
   } catch {
     next(createHttpError(401, 'Invalid or expired token'));
     return;
   }
-  const user = await User.findOne({ _id: paylod.sub, email: paylod.email });
+
+  const user = await User.findOne({ _id: payload.sub, email: payload.email });
   if (!user) {
     next(createHttpError(404, 'User not found'));
     return;

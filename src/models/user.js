@@ -34,13 +34,6 @@ const userSchema = new Schema(
   },
 );
 
-// Метод toJSON для видалення пароля при відправленні об'єкта користувача
-userSchema.methods.toJSON = function () {
-  const userObject = this.toObject();
-  delete userObject.password;
-  return userObject;
-};
-
 // Хук pre('save') для автоматичного встановлення username = email, якщо username не заданий
 // Хук pre('save')
 userSchema.pre('save', async function (next) {
@@ -57,6 +50,13 @@ userSchema.pre('save', async function (next) {
 
   next();
 });
+
+// Метод toJSON для видалення пароля при відправленні об'єкта користувача
+userSchema.methods.toJSON = function () {
+  const userObject = this.toObject();
+  delete userObject.password;
+  return userObject;
+};
 
 // Модель користувача
 export const User = model('User', userSchema);
