@@ -17,27 +17,32 @@ import userRoutes from './routes/userRoutes.js';
 import { errors } from 'celebrate';
 
 const app = express();
-const PORT = process.env.PORT ?? 3030; // 🔹 Виправлено
+const PORT = process.env.PORT ?? 3030;
 
+// 🔹 Middleware (порядок важливий)
 app.use(logger);
 app.use(express.json());
-
 app.use(
   cors({
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true,
   }),
 );
-
 app.use(helmet());
 app.use(cookieParser());
 
-// 🔹 Підключаємо роутери **без префіксів**
+// 🔹 Роутери
 app.use(authRoutes);
 app.use(notesRoutes);
 app.use(userRoutes);
-app.use(errors());
+
+// 🔹 Обробник неіснуючих маршрутів
 app.use(notFoundHandler);
+
+// 🔹 Celebrate errors (валідація)
+app.use(errors());
+
+// 🔹 Глобальний обробник помилок
 app.use(errorHandler);
 
 await connectMongoDB();

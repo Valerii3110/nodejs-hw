@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { Session } from '../models/session.js';
 import { User } from '../models/user.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
-import { sendMail } from '../utils/sendMail.js';
+import { sendEmail } from '../utils/sendMail.js';
 import handlebars from 'handlebars';
 import path from 'node:path';
 import fs from 'node:fs/promises';
@@ -97,7 +97,6 @@ export const logoutUser = async (req, res, next) => {
 };
 
 // Запит на скидання пароля
-
 export const requestResetEmail = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -125,10 +124,11 @@ export const requestResetEmail = async (req, res, next) => {
     const templateSource = await fs.readFile(templatePath, 'utf8');
     const template = handlebars.compile(templateSource);
 
-    const html = template({ name: user.email, resetLink });
+    // 🔹 Передаємо username замість email
+    const html = template({ name: user.username, resetLink });
 
     try {
-      await sendMail({
+      await sendEmail({
         from: process.env.SMTP_FROM,
         to: email,
         subject: 'Reset your password',
@@ -150,7 +150,6 @@ export const requestResetEmail = async (req, res, next) => {
 };
 
 // Скидання пароля
-
 export const resetPassword = async (req, res, next) => {
   const { token, password } = req.body;
   let payload;
@@ -168,6 +167,8 @@ export const resetPassword = async (req, res, next) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
   await User.updateOne({ _id: user._id }, { password: hashedPassword });
+
+  // 🔹 Видаляємо всі сесії користувача після зміни пароля (як вимагається)
   await Session.deleteMany({ userId: user._id });
 
   res.status(200).json({ message: 'Password reset successfully' });
