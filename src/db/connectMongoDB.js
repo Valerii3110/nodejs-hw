@@ -1,4 +1,4 @@
-//* src/db/connectMongoDB.js */
+// src/db/connectMongoDB.js
 import mongoose from 'mongoose';
 //* Підключення до MongoDB
 export const connectMongoDB = async () => {

@@ -10,7 +10,7 @@ const router = Router();
 
 // Оновлення аватара користувача
 router.patch(
-  '/users/me/avatar',
+  '/user/me/avatar',
   authenticate,
   // Додаємо після авторизації, але до контролера
   upload.single('avatar'),

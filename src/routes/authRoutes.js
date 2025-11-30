@@ -1,21 +1,20 @@
 // src/routes/authRoutes.js
-// src/routes/authRoutes.js
-import { Router } from 'express';
 import { celebrate } from 'celebrate';
+import { Router } from 'express';
 import {
-  registerUserSchema,
-  loginUserSchema,
-  requestResetEmailShema,
-  resetPasswordSchema,
-} from '../validations/authValidation.js';
-import {
-  registerUser,
   loginUser,
-  refreshUserSession,
   logoutUser,
+  refreshUserSession,
+  registerUser,
   requestResetEmail,
   resetPassword,
 } from '../controllers/authController.js';
+import {
+  loginUserSchema,
+  registerUserSchema,
+  requestResetEmailSchema,
+  resetPasswordSchema,
+} from '../validations/authValidation.js';
 
 const router = Router();
 
@@ -25,16 +24,16 @@ router.post('/register', celebrate({ body: registerUserSchema }), registerUser);
 // Логін
 router.post('/login', celebrate({ body: loginUserSchema }), loginUser);
 
-// Оновлення сесії
-router.post('/refresh', refreshUserSession);
-
 // Логаут
 router.post('/logout', logoutUser);
+
+// Оновлення сесії
+router.post('/refresh', refreshUserSession);
 
 // Запит на скидання пароля
 router.post(
   '/auth/request-reset-email',
-  celebrate(requestResetEmailShema),
+  celebrate(requestResetEmailSchema),
   requestResetEmail,
 );
 

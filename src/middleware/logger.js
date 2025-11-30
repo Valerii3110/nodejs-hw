@@ -1,4 +1,4 @@
-//* src/middleware/logger.js */
+// src/middleware/logger.js
 import pino from 'pino-http';
 //* Логер HTTP-запитів
 export const logger = pino({

@@ -1,3 +1,4 @@
+// src/model/note.js
 import mongoose from 'mongoose';
 import { TAGS } from '../constants/tags.js';
 

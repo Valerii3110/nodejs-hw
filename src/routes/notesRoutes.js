@@ -1,6 +1,6 @@
-//* src/routes/notesRoutes.js
-import { Router } from 'express';
+// src/routes/notesRoutes.js
 import { celebrate } from 'celebrate';
+import { Router } from 'express';
 import {
   createNote,
   deleteNote,
@@ -8,13 +8,13 @@ import {
   getNoteById,
   updateNote,
 } from '../controllers/notesController.js';
+import { authenticate } from '../middleware/authenticate.js';
 import {
+  createNoteSchema,
   getAllNotesSchema,
   noteIdSchema,
-  createNoteSchema,
   updateNoteSchema,
 } from '../validations/notesValidation.js';
-import { authenticate } from '../middleware/authenticate.js';
 
 //* Ініціалізація роутера
 const router = Router();

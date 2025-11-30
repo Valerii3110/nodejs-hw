@@ -1,4 +1,4 @@
-//* src/middleware/errorHandler.js */
+// src/middleware/errorHandler.js
 import { HttpError } from 'http-errors';
 //* Глобальний обробник помилок
 export const errorHandler = (err, req, res, next) => {
