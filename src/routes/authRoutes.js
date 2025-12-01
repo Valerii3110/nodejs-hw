@@ -1,5 +1,5 @@
 // src/routes/authRoutes.js
-import { celebrate, Segments } from 'celebrate';
+import { celebrate } from 'celebrate';
 import { Router } from 'express';
 import {
   loginUser,
@@ -33,19 +33,11 @@ router.post('/refresh', refreshUserSession);
 // Запит на скидання пароля
 router.post(
   '/request-reset-email',
-  celebrate({
-    body: requestResetEmailSchema[Segments.BODY],
-  }),
+  celebrate(requestResetEmailSchema),
   requestResetEmail,
 );
 
 // Скидання пароля
-router.post(
-  '/reset-password',
-  celebrate({
-    body: resetPasswordSchema[Segments.BODY],
-  }),
-  resetPassword,
-);
+router.post('/reset-password', celebrate(resetPasswordSchema), resetPassword);
 
 export default router;
